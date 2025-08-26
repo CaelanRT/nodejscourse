@@ -1,11 +1,8 @@
-const http = require('http');
+// npm - global command, comes with node
+// npm --version
 
-//req usually refers to the incoming request object, the res usually is the response heading back
-const server = http.createServer((req, res)=>{
-    res.write('Welcome to our home page');
-    res.end();
-});
+// local dependency - use it only in this particular project
+// npm i <packageName>
 
-// need to give it a port number
-server.listen(5000);
-
+// global dependency - use it in any project
+// npm install -g <packageName>
