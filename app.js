@@ -1,22 +1,17 @@
-const {readFile} = require('fs');
+// we need an eventemitter class from events
+const { log } = require('console');
+const EventEmitter = require('events');
 
-const getText = (path) => {
-    return new Promise((resolve, reject)=>{
-        readFile('./content/first.txt', 'utf-8', (err, data)=>{
-            if (err) {
-            reject(err);
-        } else {
-            resolve(data);    
-        }
+// this is now an object
+const customEmitter = new EventEmitter();
 
-        })
-    })
-}
+//2 things we want - on and emit
 
-// how to fix this issue, use promises and async await
+// on essentially subscribes to a specific event
+customEmitter.on('response', ()=>{
+    console.log(`data received`);
+    
+});
 
-// once the file system responds, that's when the callback happens and that's where you put your logic
-
-// .then will do something with the return value - .catch is waht happens with an error
-getText('./content/first.txt').then(result => console.log(result)).catch(err => console.log());
-
+// you need your strings to match, if you're emitting response event it has to match
+customEmitter.emit('response');
