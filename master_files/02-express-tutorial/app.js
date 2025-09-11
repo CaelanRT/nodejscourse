@@ -51,6 +51,36 @@ app.get('/api/products/:productID/reviews/:reviewID', (req,res)=>{
     res.send('hello world');
 })
 
+app.get('/api/v1/query', (req,res)=>{
+
+    // console.log(req.query);
+
+    // you have your list of products now
+    const {search, limit} = req.query;
+    let sortedProducts = [...products];
+    
+    // searching for a product that starts with a certain letter
+    if(search){
+        sortedProducts = sortedProducts.filter((product)=>{
+            return product.name.startsWith(search);
+        })
+    }
+
+    // seeing if there is a query limit in the query string
+    if (limit) {
+        sortedProducts = sortedProducts.slice(0,Number(limit))
+    }
+
+    // checking to see if the array is empty, sending back successful empty response if so
+    if(sortedProducts.length < 1) {
+        return res.status(200).json({success:true, data:[]})
+    }
+
+    // sending back our successful products array in json
+    return res.status(200).json(sortedProducts);
+    
+})
+
 // listen to the server
 app.listen(5000, ()=>{
     console.log('Server is listening on port 5000...');
