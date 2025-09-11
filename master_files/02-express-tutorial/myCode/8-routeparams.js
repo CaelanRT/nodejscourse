@@ -46,6 +46,12 @@ app.get('/api/products/:productID', (req, res)=> {
     
 })
 
+app.get('/api/products/:productID/reviews/:reviewID', (req,req)=>{
+    console.log(req.params);
+    res.send('hello world');
+    
+})
+
 // listen to the server
 app.listen(5000, ()=>{
     console.log('Server is listening on port 5000...');
