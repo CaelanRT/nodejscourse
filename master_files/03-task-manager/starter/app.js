@@ -7,11 +7,7 @@ require('dotenv').config();
 
 // middleware
 app.use(express.json());
-
-// routes
-app.get('/hello', (req, res)=>{
-    res.send('Task Manager App');
-})
+app.use(express.static('./public'));
 
 // route of '/api/v1' api routes convention is because your root is probably an html page and then you want to have some versioning
 app.use('/api/v1/tasks', tasks)
