@@ -3,7 +3,9 @@ const Task = require('../models/task');
 const getAllTasks = async (req, res) =>{
     try {
         const tasks = await Task.find({});
-        res.status(200).json({tasks});
+
+        // this is the way to show how many hits you got from the database and pass it back to the frontend, can also set up a status for if it was success and fail in the error
+        res.status(200).json({ tasks, amount:tasks.length });
     } catch (error) {
         res.status(500).json({msg:error});
     }
