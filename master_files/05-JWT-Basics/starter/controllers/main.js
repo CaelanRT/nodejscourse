@@ -4,6 +4,7 @@
 
 // setup authentication so only the request with JWT can access the dashboard
 
+const jwt = require ('jsonwebtoken')
 const CustomAPIError = require('../errors/custom-error');
 
 const login = async (req, res) => {
@@ -13,16 +14,45 @@ const login = async (req, res) => {
         throw new CustomAPIError('please provide email and password', 400);
     }
 
-    console.log(username, password);
+    // just for demo, noramlly provided by db!
+    const id = new Date().getDate();
+
+    //create new token
+    //sending 3 things in the web token: 1 - pyaload, 2 - JWT secret, 3 - options
+    // keep payloads small, better for speed and users
+    const token = jwt.sign({id, username},process.env.JWT_SECRET,{expiresIn:'30d'});
+
     
     
-    res.send('Fake Login/Register/Signup')
+    res.status(200).json({msg:'user created', token});
 }
 
 const dashboard = async (req, res) => {
-    const luckyNumber = Math.floor(Math.random() * 100);
 
-    res.status(200).json({msg:`Hello, John Doe`, secret:`Here is your authorized data, your lucky number is ${luckyNumber}`});
+    const authHeader = req.headers.authorization;
+
+
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        throw new CustomAPIError('No token provided', 401)
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        
+        const luckyNumber = Math.floor(Math.random() * 100);
+        res.status(200).json({msg:`Hello, ${decoded.username}`, secret:`Here is your authorized data, your lucky number is ${luckyNumber}`});
+        
+    } catch (error) {
+        console.log(error);
+        
+        throw new CustomAPIError('Not authorized to access this route', 401)
+    }
+    
+
+    
 }
 
 module.exports = {
