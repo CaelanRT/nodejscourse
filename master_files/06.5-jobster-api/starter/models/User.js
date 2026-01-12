@@ -38,6 +38,9 @@ const UserSchema = new mongoose.Schema({
 })
 
 UserSchema.pre('save', async function () {
+  
+  // you add this in here because you're return if you don't modify the password, the hash will get weird if you don't do this because it'll run twice
+  if (!this.isModified('password')) return;
   const salt = await bcrypt.genSalt(10)
   this.password = await bcrypt.hash(this.password, salt)
 })
