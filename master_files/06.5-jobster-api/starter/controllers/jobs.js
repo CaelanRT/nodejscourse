@@ -3,8 +3,63 @@ const { StatusCodes } = require('http-status-codes')
 const { BadRequestError, NotFoundError } = require('../errors')
 
 const getAllJobs = async (req, res) => {
-  const jobs = await Job.find({ createdBy: req.user.userId }).sort('createdAt')
-  res.status(StatusCodes.OK).json({ jobs, count: jobs.length })
+
+  const {search, status, jobType, sort} = req.query;
+
+  const queryObject = {
+    createdBy:req.user.userId,
+
+  }
+
+  // these fields are used to limit the amount of jobs coming back in the db lookup based on factors
+  if (search) {
+    queryObject.position = {$regex: search, $options:'i'};
+  }
+
+  if (status && status !== 'all') {
+    queryObject.status = status;
+  }
+
+  if (jobType && jobType !== 'all') {
+    queryObject.jobType = jobType;
+  }
+
+  // find the jobs in the db
+  let result = Job.find(queryObject);
+
+  // these fields help determine the order functionality of what is returned
+  if (sort === 'latest') {
+    result = result.sort('-createdAt');
+  }
+
+  if (sort === 'oldest') {
+    result = result.sort('createdAt');
+  }
+
+  if (sort === 'a-z') {
+    result = result.sort('position')
+  }
+
+  if (sort === 'z-a') {
+    result = result.sort('-position');
+  }
+
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  result = result.skip(skip).limit(limit);
+
+  const jobs = await result;
+
+  // setting up another await and query and passing in the predefined query object to get the amount of jobs from this query
+  const totalJobs = await Job.countDocuments(queryObject);
+  const numOfPages = Math.ceil(totalJobs/limit);
+
+
+  res.status(StatusCodes.OK).json({ jobs, totalJobs, numOfPages })
+
+
 }
 const getJob = async (req, res) => {
   const {
@@ -55,10 +110,13 @@ const deleteJob = async (req, res) => {
     params: { id: jobId },
   } = req
 
-  const job = await Job.findByIdAndRemove({
+
+  const job = await Job.findByIdAndDelete({
     _id: jobId,
     createdBy: userId,
   })
+  
+
   if (!job) {
     throw new NotFoundError(`No job with id ${jobId}`)
   }
