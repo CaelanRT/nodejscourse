@@ -8,6 +8,7 @@ const app = express();
 
 // rest of the packages
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 
 // middleware imports
 const notFoundMiddlware = require('./middleware/not-found');
@@ -17,14 +18,24 @@ const authRouter = require('./routes/authRoutes');
 // middleware invocations
 app.use(morgan('tiny'));
 app.use(express.json());
-
+app.use(cookieParser());
 
 
 // database
 const dbConnect = require('./db/connect');
 
+
+
+
 // routes
 app.get('/', (req, res) =>{
+    
+    res.send('e-commerce api');
+});
+
+app.get('/api/v1', (req, res) =>{
+    console.log(req.cookies);
+    
     res.send('e-commerce api');
 });
 
