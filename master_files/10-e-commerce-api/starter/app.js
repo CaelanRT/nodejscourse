@@ -14,6 +14,7 @@ const cookieParser = require('cookie-parser');
 const notFoundMiddlware = require('./middleware/not-found');
 const errorHandlerMiddleware = require('./middleware/error-handler');
 const authRouter = require('./routes/authRoutes');
+const userRouter = require('./routes/userRoutes')
 
 // middleware invocations
 app.use(morgan('tiny'));
@@ -40,6 +41,7 @@ app.get('/api/v1', (req, res) =>{
 
 // auth routes
 app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/users', userRouter);
 
 // error handling must be under the main routes
 app.use(notFoundMiddlware);
