@@ -1,10 +1,25 @@
-const getAllUsers = (req, res) => {
-    res.send('getallusers');
+const {StatusCodes} = require('http-status-codes');
+const User = require('../models/User');
+const {NotFoundError} = require('../errors/index');
+
+const getAllUsers = async (req, res) => {
+
+    // how to remove password
+    const users = await User.find({role:'user'}).select('-password');
+
+    res.status(StatusCodes.OK).json({users});
 };
 
 // get single user
-const getSingleUser = (req, res) => {
-    res.send('getsingleuser')
+const getSingleUser = async (req, res) => {
+
+    const user = await User.findOne({_id:req.params.id}).select('-password');
+
+    if (!user) {
+        throw new NotFoundError(`No user with id ${id}`);
+    }
+
+    res.status(StatusCodes.OK).json({user});
 }
 
 // show current user
