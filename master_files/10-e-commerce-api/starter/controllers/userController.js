@@ -4,6 +4,8 @@ const {NotFoundError} = require('../errors/index');
 
 const getAllUsers = async (req, res) => {
 
+    console.log(req.user);
+    
     // how to remove password
     const users = await User.find({role:'user'}).select('-password');
 
