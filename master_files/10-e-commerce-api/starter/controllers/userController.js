@@ -1,6 +1,7 @@
 const {StatusCodes} = require('http-status-codes');
 const User = require('../models/User');
 const CustomError = require('../errors/index');
+const { createTokenUser, attachCookiesToResponse } = require('../utils');
 
 const getAllUsers = async (req, res) => {
 
@@ -29,9 +30,21 @@ const getSingleUser = async (req, res) => {
 const showCurrentUser = (req, res) => {
     res.status(StatusCodes.OK).json({user:req.user});
 }
-// update user
-const updateUser = (req,res) =>{
-    res.send('update user')
+// need to reattach the cookie because you're changing values on the frontend!
+const updateUser = async (req,res) =>{
+    const {email, name} = req.body;
+
+    if (!email || !name) {
+        throw new CustomError.BadRequestError('Missing email or name. Please input both values.'); 
+    }
+
+    const user = await User.findOneAndUpdate({_id:req.user.userId}, {email, name}, {new:true, runValidators:true});
+
+    const tokenUser = createTokenUser(user);
+
+    res = attachCookiesToResponse(res, tokenUser);
+
+    res.status(StatusCodes.OK).json({user:tokenUser, msg:"Updated Successfully"});
 }
 
 // update user password
@@ -60,7 +73,7 @@ const updateUserPassword = async (req,res) =>{
 
     await user.save();
 
-    res.status(StatusCodes.OK).json({user});
+    res.status(StatusCodes.OK).json({msg:'Password updated successfully!'});
 }
 
 module.exports = {

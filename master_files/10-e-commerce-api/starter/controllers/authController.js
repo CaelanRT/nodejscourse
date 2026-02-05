@@ -1,8 +1,7 @@
 const {StatusCodes} = require('http-status-codes');
 const User = require('../models/User');
 const CustomError = require('../errors');
-const {attachCookiesToResponse} = require('../utils')
-
+const {attachCookiesToResponse, createTokenUser} = require('../utils')
 
 
 // create a user works, need to finish the rest of the vid
@@ -21,11 +20,7 @@ const register = async (req, res) =>{
 
     const user = await User.create({name, email, password, role});
 
-    const tokenUser = {
-        name: user.name,
-        userId: user._id,
-        role: user.role
-    }
+    const tokenUser = createTokenUser(user);
 
     // just going to delete the code here and call the function!
 
@@ -53,11 +48,7 @@ const login = async (req, res) =>{
         throw new CustomError.UnauthenticatedError('Invalid password.');
     }
 
-    const tokenUser = {
-        name: user.name,
-        userId: user._id,
-        role: user.role
-    }
+    const tokenUser = createTokenUser(user);
 
     res = attachCookiesToResponse(res, tokenUser);
 
