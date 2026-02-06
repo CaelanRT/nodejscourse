@@ -33,6 +33,11 @@ const UserSchema = new mongoose.Schema({
 
 // don't use an arrow function!
 UserSchema.pre('save', async function(){
+
+    console.log(this.modifiedPaths());
+    console.log(this.isModified('name'));
+    
+    
     const salt = await bcrypt.genSalt(10);
 
     this.password = await bcrypt.hash(this.password, salt);

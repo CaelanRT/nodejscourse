@@ -30,7 +30,9 @@ const getSingleUser = async (req, res) => {
 const showCurrentUser = (req, res) => {
     res.status(StatusCodes.OK).json({user:req.user});
 }
-// need to reattach the cookie because you're changing values on the frontend!
+
+// update user with user.save()
+// this one with .save actually calls the pre.save hook that we have in the model, thereby messing with the password and giving you password issues
 const updateUser = async (req,res) =>{
     const {email, name} = req.body;
 
@@ -38,7 +40,12 @@ const updateUser = async (req,res) =>{
         throw new CustomError.BadRequestError('Missing email or name. Please input both values.'); 
     }
 
-    const user = await User.findOneAndUpdate({_id:req.user.userId}, {email, name}, {new:true, runValidators:true});
+    const user = await User.findOne({_id:req.user.userId});
+
+    user.email = email;
+    user.name = name;
+
+    await user.save();
 
     const tokenUser = createTokenUser(user);
 
@@ -83,3 +90,21 @@ module.exports = {
     updateUser,
     updateUserPassword
 }
+
+// update user with findOneAndUpdate
+// need to reattach the cookie because you're changing values on the frontend!
+// const updateUser = async (req,res) =>{
+//     const {email, name} = req.body;
+
+//     if (!email || !name) {
+//         throw new CustomError.BadRequestError('Missing email or name. Please input both values.'); 
+//     }
+
+//     const user = await User.findOneAndUpdate({_id:req.user.userId}, {email, name}, {new:true, runValidators:true});
+
+//     const tokenUser = createTokenUser(user);
+
+//     res = attachCookiesToResponse(res, tokenUser);
+
+//     res.status(StatusCodes.OK).json({user:tokenUser, msg:"Updated Successfully"});
+// }
