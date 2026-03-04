@@ -1,95 +1,105 @@
-const {StatusCodes} = require('http-status-codes');
-const User = require('../models/User');
-const CustomError = require('../errors/index');
-const { createTokenUser, attachCookiesToResponse } = require('../utils');
+const { StatusCodes } = require("http-status-codes");
+const User = require("../models/User");
+const CustomError = require("../errors/index");
+const {
+  createTokenUser,
+  attachCookiesToResponse,
+  checkPermissions,
+} = require("../utils");
 
 const getAllUsers = async (req, res) => {
+  console.log(req.user);
 
-    console.log(req.user);
-    
-    // how to remove password
-    const users = await User.find({role:'user'}).select('-password');
+  // how to remove password
+  const users = await User.find({ role: "user" }).select("-password");
 
-    res.status(StatusCodes.OK).json({users});
+  res.status(StatusCodes.OK).json({ users });
 };
 
 // get single user
 const getSingleUser = async (req, res) => {
+  const user = await User.findOne({ _id: req.params.id }).select("-password");
 
-    const user = await User.findOne({_id:req.params.id}).select('-password');
+  if (!user) {
+    throw new CustomError.NotFoundError(`No user with id ${id}`);
+  }
 
-    if (!user) {
-        throw new CustomError.NotFoundError(`No user with id ${id}`);
-    }
+  checkPermissions(req.user, user._id);
 
-    res.status(StatusCodes.OK).json({user});
-}
+  res.status(StatusCodes.OK).json({ user });
+};
 
 // this route just uses the authenticate user middleware and gets the req.user
 // used for when you load the page and want to check if there is an active cookie still
 const showCurrentUser = (req, res) => {
-    res.status(StatusCodes.OK).json({user:req.user});
-}
+  res.status(StatusCodes.OK).json({ user: req.user });
+};
 
 // update user with user.save()
 // this one with .save actually calls the pre.save hook that we have in the model, thereby messing with the password and giving you password issues
-const updateUser = async (req,res) =>{
-    const {email, name} = req.body;
+const updateUser = async (req, res) => {
+  const { email, name } = req.body;
 
-    if (!email || !name) {
-        throw new CustomError.BadRequestError('Missing email or name. Please input both values.'); 
-    }
+  if (!email || !name) {
+    throw new CustomError.BadRequestError(
+      "Missing email or name. Please input both values.",
+    );
+  }
 
-    const user = await User.findOne({_id:req.user.userId});
+  const user = await User.findOne({ _id: req.user.userId });
 
-    user.email = email;
-    user.name = name;
+  user.email = email;
+  user.name = name;
 
-    await user.save();
+  await user.save();
 
-    const tokenUser = createTokenUser(user);
+  const tokenUser = createTokenUser(user);
 
-    res = attachCookiesToResponse(res, tokenUser);
+  res = attachCookiesToResponse(res, tokenUser);
 
-    res.status(StatusCodes.OK).json({user:tokenUser, msg:"Updated Successfully"});
-}
+  res
+    .status(StatusCodes.OK)
+    .json({ user: tokenUser, msg: "Updated Successfully" });
+};
 
 // update user password
-const updateUserPassword = async (req,res) =>{
-    const {password, newPassword} = req.body;
+const updateUserPassword = async (req, res) => {
+  const { password, newPassword } = req.body;
 
-    if (!password || !newPassword) {
-        throw new CustomError.BadRequestError('Missing passwords. Please enter the old and new password.');
-    }
+  if (!password || !newPassword) {
+    throw new CustomError.BadRequestError(
+      "Missing passwords. Please enter the old and new password.",
+    );
+  }
 
-    const id = req.user.userId;
+  const id = req.user.userId;
 
-    const user = await User.findOne({_id:id});
+  const user = await User.findOne({ _id: id });
 
-    if (!user) {
-        throw new CustomError.NotFoundError('No user found.')
-    }
+  if (!user) {
+    throw new CustomError.NotFoundError("No user found.");
+  }
 
-    const passwordMatch = await user.comparePassword(password);
+  const passwordMatch = await user.comparePassword(password);
 
-    if (!passwordMatch) {
-        throw new CustomError.UnauthenticatedError('Invalid password.');
-    }
+  if (!passwordMatch) {
+    throw new CustomError.UnauthenticatedError("Invalid password.");
+  }
 
-    user.password = newPassword;
+  user.password = newPassword;
 
-    await user.save();
+  await user.save();
 
-    res.status(StatusCodes.OK).json({msg:'Password updated successfully!'});
-}
+  res.status(StatusCodes.OK).json({ msg: "Password updated successfully!" });
+};
 
 module.exports = {
-    getAllUsers,
-    getSingleUser,
-    showCurrentUser,
-    updateUser,
-    updateUserPassword
-}
+  getAllUsers,
+  getSingleUser,
+  showCurrentUser,
+  updateUser,
+  updateUserPassword,
+};
 
 // update user with findOneAndUpdate
 // need to reattach the cookie because you're changing values on the frontend!
@@ -97,7 +107,7 @@ module.exports = {
 //     const {email, name} = req.body;
 
 //     if (!email || !name) {
-//         throw new CustomError.BadRequestError('Missing email or name. Please input both values.'); 
+//         throw new CustomError.BadRequestError('Missing email or name. Please input both values.');
 //     }
 
 //     const user = await User.findOneAndUpdate({_id:req.user.userId}, {email, name}, {new:true, runValidators:true});
