@@ -1,6 +1,7 @@
 const Product = require("../models/Product");
 const CustomError = require("../errors/index");
 
+// need to add async
 const createProduct = (req, res) => {
   res.send("createProduct");
 };
