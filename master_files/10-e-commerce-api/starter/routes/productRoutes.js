@@ -17,11 +17,11 @@ const {
 
 router
   .route("/")
-  .get(authenticateUser, getAllProducts)
+  .get(getAllProducts)
   .post(authenticateUser, authorizePermissions("admin"), createProduct);
 router
   .route("/:id")
-  .get(authenticateUser, getSingleProduct)
+  .get(getSingleProduct)
   .patch(authenticateUser, authorizePermissions("admin"), updateProduct)
   .delete(authenticateUser, authorizePermissions("admin"), deleteProduct);
 router
