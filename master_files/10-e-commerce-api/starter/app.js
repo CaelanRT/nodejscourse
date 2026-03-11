@@ -9,6 +9,7 @@ const app = express();
 // rest of the packages
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
+const fileUpload = require("express-fileupload");
 
 // middleware imports
 const notFoundMiddlware = require("./middleware/not-found");
@@ -21,6 +22,9 @@ const productRouter = require("./routes/productRoutes");
 app.use(morgan("tiny"));
 app.use(express.json());
 app.use(cookieParser(process.env.JWT_SECRET));
+
+app.use(express.static("./public"));
+app.use(fileUpload());
 
 // database
 const dbConnect = require("./db/connect");
