@@ -34,6 +34,7 @@ const ReviewSchema = mongoose.Schema(
   },
 );
 
+// this lets you set a limit of 1 review per product per user!
 ReviewSchema.index({ product: 1, user: 1 }, { unique: true });
 
-module.exports = mongoose.Model("Review", ReviewSchema);
+module.exports = mongoose.model("Review", ReviewSchema);
