@@ -63,12 +63,54 @@ const getSingleReview = async (req, res) => {
   res.status(StatusCodes.OK).json({ review });
 };
 
-const updateReview = (req, res) => {
-  res.send("updateReview");
+const updateReview = async (req, res) => {
+  const { id: reviewId } = req.params;
+
+  if (!reviewId) {
+    throw new CustomError.BadRequestError("No ID in request");
+  }
+
+  const { rating, title, comment } = req.body;
+
+  if (!rating || !title || !comment) {
+    throw new CustomError.BadRequestError("Invalid request.");
+  }
+
+  const review = await Review.findOne({ _id: reviewId });
+
+  if (!review) {
+    throw new CustomError.NotFoundError(`No review with ID ${reviewId}`);
+  }
+
+  checkPermissions(req.user, review.user._id);
+
+  review.rating = rating;
+  review.title = title;
+  review.comment = comment;
+
+  await review.save();
+
+  res.status(StatusCodes.OK).json({ review });
 };
 
-const deleteReview = (req, res) => {
-  res.send("deleteReview");
+const deleteReview = async (req, res) => {
+  const { id: reviewId } = req.params;
+
+  if (!reviewId) {
+    throw new CustomError.BadRequestError("No ID in request");
+  }
+
+  const review = await Review.findOne({ _id: reviewId });
+
+  if (!review) {
+    throw new CustomError.NotFoundError(`No review with ID ${reviewId}`);
+  }
+
+  checkPermissions(req.user, review.user._id);
+
+  const deleted = await Review.findOneAndDelete({ _id: reviewId });
+
+  res.status(StatusCodes.OK).json({ deleted });
 };
 
 module.exports = {
