@@ -38,7 +38,11 @@ const createReview = async (req, res) => {
 };
 
 const getAllReviews = async (req, res) => {
-  const reviews = await Review.find({});
+  // populate method essentially lets you do a join of different values that are referenced in tables - its a one way join that you have
+  const reviews = await Review.find({}).populate({
+    path: "product",
+    select: "name company price",
+  });
 
   if (!reviews) {
     throw new CustomError.NotFoundError("No reviews in database");
