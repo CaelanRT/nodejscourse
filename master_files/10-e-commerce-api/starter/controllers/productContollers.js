@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const Review = require("../models/Review");
 const CustomError = require("../errors/index");
 const { StatusCodes } = require("http-status-codes");
 const path = require("path");
@@ -59,11 +60,13 @@ const deleteProduct = async (req, res) => {
     );
   }
 
-  // .remove() has been deprecated so im gonna do some funny business and stick to the course, but just find one and delete here
+  // deleting all reviews before the product gets deleted
+  const reviews = await Review.deleteMany({ product: productId });
 
+  // .remove() has been deprecated so im gonna do some funny business and stick to the course, but just find one and delete here
   const deleted = await Product.findOneAndDelete({ _id: productId });
 
-  res.status(StatusCodes.OK).json({ deleted });
+  res.status(StatusCodes.OK).json({ deleted, reviews });
 };
 
 const uploadImage = async (req, res) => {

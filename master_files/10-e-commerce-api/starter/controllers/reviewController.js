@@ -122,6 +122,10 @@ const getSingleProductReviews = async (req, res) => {
 
   const reviews = await Review.find({ product: productId });
 
+  if (!reviews) {
+    throw new CustomError.NotFoundError("No reviews for this product");
+  }
+
   res.status(StatusCodes.OK).json({ reviews, count: reviews.length });
 };
 
